@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class VoxelDrawer : MonoBehaviour {
 	[Range(0.0000001f,1f)]
@@ -13,8 +14,9 @@ public class VoxelDrawer : MonoBehaviour {
     {
         get { return SteamVR_Controller.Input((int)trackedObj.index); }
     }
+	private SteamVR_TrackedController trackedController;
 
-	private Dictionary<Vector3, bool> voxelData = new Dictionary<Vector3, bool>(10000);
+	private Dictionary<Vector3, GameObject> voxelData = new Dictionary<Vector3, GameObject>(10000);
 	
 	private Vector3 brushTipPosition = new Vector3(0f, .0149f, .1123f);
 	private Transform brushTip;
@@ -23,6 +25,7 @@ public class VoxelDrawer : MonoBehaviour {
 
 	void Awake () {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
+		trackedController = GetComponent<SteamVR_TrackedController>();
 	}
 
 	// Use this for initialization
@@ -41,6 +44,15 @@ public class VoxelDrawer : MonoBehaviour {
 			if (Controller.GetHairTrigger()) // true, if even lightly pressed
 			{
 				DrawVoxel(brushTip.position);
+			}
+
+			if (Controller.GetTouch(SteamVR_Controller.ButtonMask.Axis0)) {
+				// Show eraser
+			}
+
+			// if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Touchpad)) {
+			if (trackedController.padPressed) {
+				EraseVoxel(brushTip.position);
 			}
 		}
 	}
@@ -72,18 +84,42 @@ public class VoxelDrawer : MonoBehaviour {
 
 	/// <summary>Returns true, if a new voxel was added, false if the voxel was already present at the given position.</summary>
 	private bool DrawVoxel(Vector3 position) {
+		bool alreadyPresent = false;
 		Vector3 voxelIndex;
-		bool alreadyPresent;
+		GameObject voxel = null;
 
 		voxelIndex = PositionToVoxelIndex(position);
-		voxelData.TryGetValue(voxelIndex, out alreadyPresent);
+		try {
+			voxel = voxelData[voxelIndex];
+			alreadyPresent = true;
+		} catch (KeyNotFoundException) {}
 
-		if (!alreadyPresent) {
-			voxelData.Add(voxelIndex, true);
-			Instantiate(voxelPrefab, voxelIndex, Quaternion.identity);
+		if (voxel == null) {
+			voxelData.Add(voxelIndex, Instantiate(voxelPrefab, voxelIndex, Quaternion.identity));
 		}
 
 		return alreadyPresent;
+	}
+
+	/// <summary>Returns true, if the an existing voxel was erased, false if the there was no voxel at the index, or some error occured when deleting.</summary>
+	private bool EraseVoxel(Vector3 position) {
+		Vector3 voxelIndex;
+		bool erased = false;
+
+		voxelIndex = PositionToVoxelIndex(position);
+		try {
+			GameObject voxel = voxelData[voxelIndex];
+			voxelData.Remove(voxelIndex);
+			Destroy(voxel);
+			erased = true;
+		} catch (KeyNotFoundException) {
+			erased = false;
+		} catch (Exception e) {
+			Debug.Log("Error occured while erasing voxel " + voxelIndex + ":");
+			Debug.LogError(e.Message);
+		}
+
+		return erased;
 	}
 
 	private Vector3 PositionToVoxelIndex(Vector3 position) {
