@@ -15,6 +15,11 @@ public class VoxelDrawer : MonoBehaviour {
     }
 
 	private Dictionary<Vector3, bool> voxelData = new Dictionary<Vector3, bool>(10000);
+	
+	private Vector3 brushTipPosition = new Vector3(0f, .0149f, .1123f);
+	private Transform brushTip;
+	[SerializeField]
+	private Material brushTipMaterial;
 
 	void Awake () {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -23,16 +28,47 @@ public class VoxelDrawer : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		voxelPrefab.transform.localScale = new Vector3(voxelSize, voxelSize, voxelSize);
+
+		StartCoroutine(InitializationBrushTip());
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (Controller.GetHairTrigger()) // true, if even lightly pressed
+		if (brushTip != null) 
 		{
-			DrawVoxel(transform.position);
+			brushTip.rotation = Quaternion.identity; // Keep brush tip in the same orientation
+
+			if (Controller.GetHairTrigger()) // true, if even lightly pressed
+			{
+				DrawVoxel(brushTip.position);
+			}
 		}
 	}
 
+	private IEnumerator InitializationBrushTip() {
+		Transform controllerModel = GetControllerModelTransform();
+
+		while(true) {
+			yield return null;
+
+			try {
+				controllerModel.GetChild(0); // Essentially, wait until the controller model is loaded
+			} catch (UnityException) { // Transform child out of bounds
+				continue;
+			}
+
+			break;		
+		}
+
+		brushTip = Instantiate(voxelPrefab, Vector3.zero, Quaternion.identity, controllerModel).transform;
+		brushTip.transform.localPosition = brushTipPosition;
+
+		brushTip.gameObject.GetComponent<MeshRenderer>().material = brushTipMaterial;
+	}
+
+	private Transform GetControllerModelTransform() {
+		return transform.GetChild(0);
+	}
 
 	/// <summary>Returns true, if a new voxel was added, false if the voxel was already present at the given position.</summary>
 	private bool DrawVoxel(Vector3 position) {
