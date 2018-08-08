@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 
 public class VoxelDrawer : MonoBehaviour {
+	[Tooltip("Parent GameObject for all voxels to be spawned.")]
+	public Transform voxelsParent;
 	[Range(0.0000001f,1f)]
 	public float voxelSize;
 	[Tooltip("A GameObject with scale Vector3.one.")]
@@ -102,7 +104,7 @@ public class VoxelDrawer : MonoBehaviour {
 		} catch (KeyNotFoundException) {}
 
 		if (voxel == null) {
-			voxelData.Add(voxelIndex, Instantiate(voxelPrefab, voxelIndex, Quaternion.identity));
+			voxelData.Add(voxelIndex, Instantiate(voxelPrefab, voxelIndex, Quaternion.identity, voxelsParent));
 		}
 
 		return alreadyPresent;
@@ -136,8 +138,6 @@ public class VoxelDrawer : MonoBehaviour {
 
 		return erased;
 	}
-
-	
 
 	private static class Utils {
 		/// <summary>Corner points + center.</summary>
