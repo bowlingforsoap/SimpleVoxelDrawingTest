@@ -52,7 +52,7 @@ public class VoxelDrawer : MonoBehaviour {
 
 			// if (Controller.GetPressDown(SteamVR_Controller.ButtonMask.Touchpad)) {
 			if (trackedController.padPressed) {
-				EraseVoxel(brushTip.position);
+				Purge(brushTip.position);
 			}
 		}
 	}
@@ -101,6 +101,14 @@ public class VoxelDrawer : MonoBehaviour {
 		return alreadyPresent;
 	}
 
+	private void Purge(Vector3 voxelPosition) {
+		Vector3[] pointsToErase = Utils.GetBoundingBoxPoints(voxelPosition, voxelSize);
+
+		foreach (Vector3 point in pointsToErase) {
+			EraseVoxel(point);
+		}
+	}
+
 	/// <summary>Returns true, if the an existing voxel was erased, false if the there was no voxel at the index, or some error occured when deleting.</summary>
 	private bool EraseVoxel(Vector3 position) {
 		Vector3 voxelIndex;
@@ -132,5 +140,29 @@ public class VoxelDrawer : MonoBehaviour {
 		voxelIndex *= voxelSize;
 
 		return voxelIndex;
+	}
+
+	private static class Utils {
+		/// <summary>Corner points + center.</summary>
+		public static Vector3[] GetBoundingBoxPoints(Vector3 center, float size) {
+			Vector3[] points = new Vector3[9];
+			Vector3 cornerPoint;
+			int count = 0;
+			points[count++] = center;
+			float halfSize = size / 2f;
+
+			for (int i = 0; i < 2; i++) {
+				for (int j = 0; j < 2; j++) {
+					float iIndexMagic = -1 * i * 2 + 1;
+					float jIndexMagic = -1 * j * 2 + 1;
+					cornerPoint = new Vector3(center.x + halfSize * iIndexMagic, center.y + halfSize, center.z + halfSize * jIndexMagic);
+					
+					points[count++] = cornerPoint; // Upper corner point
+					points[count++] = new Vector3(cornerPoint.x, cornerPoint.y - size, cornerPoint.z); // Lower corner point
+				}
+			}
+
+			return points;
+		}
 	}
 }
