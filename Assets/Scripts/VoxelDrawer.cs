@@ -22,6 +22,8 @@ public class VoxelDrawer : MonoBehaviour {
 	private Transform brushTip;
 	[SerializeField]
 	private Material brushTipMaterial;
+	[SerializeField]
+	private Material brushTipCenterMaterial;
 
 	void Awake () {
         trackedObj = GetComponent<SteamVR_TrackedObject>();
@@ -76,6 +78,11 @@ public class VoxelDrawer : MonoBehaviour {
 		brushTip.transform.localPosition = brushTipPosition;
 
 		brushTip.gameObject.GetComponent<MeshRenderer>().material = brushTipMaterial;
+
+		// Add a mini tip in the center
+		GameObject center = Instantiate(voxelPrefab, Vector3.zero, Quaternion.identity, brushTip);
+		center.transform.localPosition = Vector3.zero;
+		center.GetComponent<MeshRenderer>().material = brushTipCenterMaterial;
 	}
 
 	private Transform GetControllerModelTransform() {
@@ -114,7 +121,7 @@ public class VoxelDrawer : MonoBehaviour {
 		Vector3 voxelIndex;
 		bool erased = false;
 
-		voxelIndex = PositionToVoxelIndex(position);
+		voxelIndex = Utils.PositionToVoxelIndex(position, voxelSize);
 		try {
 			GameObject voxel = voxelData[voxelIndex];
 			voxelData.Remove(voxelIndex);
@@ -130,17 +137,7 @@ public class VoxelDrawer : MonoBehaviour {
 		return erased;
 	}
 
-	private Vector3 PositionToVoxelIndex(Vector3 position) {
-		Vector3 voxelIndex;
-
-		voxelIndex = position / voxelSize;
-		voxelIndex.x = Mathf.Floor(voxelIndex.x);
-		voxelIndex.y = Mathf.Floor(voxelIndex.y);
-		voxelIndex.z = Mathf.Floor(voxelIndex.z);
-		voxelIndex *= voxelSize;
-
-		return voxelIndex;
-	}
+	
 
 	private static class Utils {
 		/// <summary>Corner points + center.</summary>
@@ -163,6 +160,18 @@ public class VoxelDrawer : MonoBehaviour {
 			}
 
 			return points;
+		}
+
+		public static Vector3 PositionToVoxelIndex(Vector3 position, float voxelSize) {
+			Vector3 voxelIndex;
+
+			voxelIndex = position / voxelSize;
+			voxelIndex.x = Mathf.Floor(voxelIndex.x);
+			voxelIndex.y = Mathf.Floor(voxelIndex.y);
+			voxelIndex.z = Mathf.Floor(voxelIndex.z);
+			voxelIndex *= voxelSize;
+
+			return voxelIndex;
 		}
 	}
 }
