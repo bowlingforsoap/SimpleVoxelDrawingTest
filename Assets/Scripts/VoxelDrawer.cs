@@ -95,7 +95,7 @@ public class VoxelDrawer : MonoBehaviour {
 		Vector3 voxelIndex;
 		GameObject voxel = null;
 
-		voxelIndex = PositionToVoxelIndex(position);
+		voxelIndex = Utils.PositionToVoxelIndex(position, voxelSize);
 		try {
 			voxel = voxelData[voxelIndex];
 			alreadyPresent = true;
@@ -170,6 +170,8 @@ public class VoxelDrawer : MonoBehaviour {
 			voxelIndex.y = Mathf.Floor(voxelIndex.y);
 			voxelIndex.z = Mathf.Floor(voxelIndex.z);
 			voxelIndex *= voxelSize;
+
+			voxelIndex += new Vector3(voxelSize/2f, voxelSize/2f, voxelSize/2f); // Move half a voxel left
 
 			return voxelIndex;
 		}
