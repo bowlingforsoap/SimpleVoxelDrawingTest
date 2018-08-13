@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 
 public class VoxelDrawer : MonoBehaviour {
+	[Tooltip("The controller that will be used for drawing voxels.")]
+	public GameObject voxelDrawerController;
 	[Tooltip("Parent GameObject for all voxels to be spawned.")]
 	public Transform voxelsParent;
 	[Range(0.0000001f,1f)]
@@ -30,8 +32,8 @@ public class VoxelDrawer : MonoBehaviour {
 	private static VoxelDrawer voxelDrawer;
 
 	void Awake () {
-        trackedObj = GetComponent<SteamVR_TrackedObject>();
-		trackedController = GetComponent<SteamVR_TrackedController>();
+		trackedObj = voxelDrawerController.GetComponent<SteamVR_TrackedObject>();
+		trackedController = voxelDrawerController.GetComponent<SteamVR_TrackedController>();
 	}
 
 	// Use this for initialization
