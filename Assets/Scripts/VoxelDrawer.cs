@@ -40,7 +40,7 @@ public class VoxelDrawer : MonoBehaviour {
 	void Start () {
 		voxelDrawer = this;
 
-		voxelPrefab.transform.localScale = new Vector3(voxelSize, voxelSize, voxelSize);
+		// voxelPrefab.transform.localScale = new Vector3(voxelSize, voxelSize, voxelSize);
 
 		StartCoroutine(InitializationBrushTip());
 	}

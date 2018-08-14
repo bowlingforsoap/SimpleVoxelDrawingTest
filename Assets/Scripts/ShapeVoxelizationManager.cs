@@ -88,23 +88,20 @@ public class ShapeVoxelizationManager : MonoBehaviour
 		pointsToVisualize[7] = lastVoxelCellIndex;
 
 		foreach (Vector3 point in pointsToVisualize) {
-			Instantiate(boundingBoxVisualizationPrefab, point, Quaternion.identity);		
+			GameObject pointVisualization = Instantiate(boundingBoxVisualizationPrefab, point, Quaternion.identity);
+			pointVisualization.transform.localScale = Vector3.one * voxelDrawer.voxelSize;
+
 		}
 	}
 
 	private IEnumerator VoxelizeShape() {
 		float voxelSize;
-		Vector3 firstVoxel;
-		Vector3 finalVoxel;
-
 		voxelSize = voxelDrawer.voxelSize;
 		
-		
-
 		Vector3 currVoxelIndex;
-		for (currVoxelIndex.x = firstVoxelCellIndex.x; currVoxelIndex.x <= lastVoxelCellIndex.x; currVoxelIndex.x += voxelSize) {
-			for (currVoxelIndex.y = firstVoxelCellIndex.y; currVoxelIndex.y <= lastVoxelCellIndex.y; currVoxelIndex.y += voxelSize) {
-				for (currVoxelIndex.z = firstVoxelCellIndex.z; currVoxelIndex.z <= lastVoxelCellIndex.z; currVoxelIndex.z += voxelSize) {
+		for (currVoxelIndex.x = firstVoxelCellIndex.x; currVoxelIndex.x <= lastVoxelCellIndex.x + voxelDrawer.voxelSize; currVoxelIndex.x += voxelSize) {
+			for (currVoxelIndex.y = firstVoxelCellIndex.y; currVoxelIndex.y <= lastVoxelCellIndex.y + voxelDrawer.voxelSize; currVoxelIndex.y += voxelSize) {
+				for (currVoxelIndex.z = firstVoxelCellIndex.z; currVoxelIndex.z <= lastVoxelCellIndex.z + voxelDrawer.voxelSize; currVoxelIndex.z += voxelSize) {
 					
 					if (VoxelInsideShape(currVoxelIndex, voxelSize)) {
 						voxelizedShape.Add(currVoxelIndex, voxelDrawer.DrawVoxel(currVoxelIndex, voxelizedShapeVoxelsParent));
@@ -120,9 +117,9 @@ public class ShapeVoxelizationManager : MonoBehaviour
 	private bool VoxelInsideShape(Vector3 voxelIndex, float voxelSize) {
 		// Debug: visualize the process
 		/* GameObject testVoxel = Instantiate(boundingBoxVisualizationPrefab, voxelIndex, Quaternion.identity);
-		testVoxel.transform.localScale /= 2f; */
+		testVoxel.transform.localScale = Vector3.one * voxelSize / 2; */
 
-		return Physics.CheckSphere(voxelIndex, voxelSize / 2f, 1 << shape.gameObject.layer);
+		return Physics.CheckSphere(voxelIndex, voxelSize / 2, 1 << shape.gameObject.layer);
 	}
 
     // Update is called once per frame
