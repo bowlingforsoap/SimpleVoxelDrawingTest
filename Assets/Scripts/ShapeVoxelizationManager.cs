@@ -19,6 +19,8 @@ public class ShapeVoxelizationManager : MonoBehaviour
 	private Dictionary<Vector3, bool> voxelizedShapeMeta = new Dictionary<Vector3, bool>(10000);
 	private Dictionary<Vector3, GameObject> voxelizedShape = new Dictionary<Vector3, GameObject>(10000);
 
+	private bool voxelizationInProcess = false;
+
     // Use this for initialization
     void Start()
     {
@@ -27,7 +29,7 @@ public class ShapeVoxelizationManager : MonoBehaviour
 		SetShapeBounds();
 		VisualizeShapeBoundingBox();
 
-		StartCoroutine(VoxelizeShape());
+		// StartCoroutine(VoxelizeShape());
     }
 
     private void SetShapeBounds()
@@ -94,24 +96,37 @@ public class ShapeVoxelizationManager : MonoBehaviour
 		}
 	}
 
-	private IEnumerator VoxelizeShape() {
-		float voxelSize;
-		voxelSize = voxelDrawer.voxelSize;
-		
-		Vector3 currVoxelIndex;
-		for (currVoxelIndex.x = firstVoxelCellIndex.x; currVoxelIndex.x <= lastVoxelCellIndex.x + voxelDrawer.voxelSize; currVoxelIndex.x += voxelSize) {
-			for (currVoxelIndex.y = firstVoxelCellIndex.y; currVoxelIndex.y <= lastVoxelCellIndex.y + voxelDrawer.voxelSize; currVoxelIndex.y += voxelSize) {
-				for (currVoxelIndex.z = firstVoxelCellIndex.z; currVoxelIndex.z <= lastVoxelCellIndex.z + voxelDrawer.voxelSize; currVoxelIndex.z += voxelSize) {
-					
-					if (VoxelInsideShape(currVoxelIndex, voxelSize)) {
-						voxelizedShape.Add(currVoxelIndex, voxelDrawer.DrawVoxel(currVoxelIndex, voxelizedShapeVoxelsParent));
-					}
+	public void StartVoxelizeShape() {
+		StartCoroutine("VoxelizeShape");
+		voxelizationInProcess = true;
+	}
 
-					yield return null;
+	public void StopVoxelizeShape() {
+		StopCoroutine("VoxelizeShape");
+		voxelizationInProcess = false;
+	}
+
+	private IEnumerator VoxelizeShape() {
+		if (!voxelizationInProcess) {
+			float voxelSize;
+			voxelSize = voxelDrawer.voxelSize;
+			
+			Vector3 currVoxelIndex;
+			for (currVoxelIndex.x = firstVoxelCellIndex.x; currVoxelIndex.x <= lastVoxelCellIndex.x + voxelDrawer.voxelSize; currVoxelIndex.x += voxelSize) {
+				for (currVoxelIndex.y = firstVoxelCellIndex.y; currVoxelIndex.y <= lastVoxelCellIndex.y + voxelDrawer.voxelSize; currVoxelIndex.y += voxelSize) {
+					for (currVoxelIndex.z = firstVoxelCellIndex.z; currVoxelIndex.z <= lastVoxelCellIndex.z + voxelDrawer.voxelSize; currVoxelIndex.z += voxelSize) {
+						
+						if (VoxelInsideShape(currVoxelIndex, voxelSize)) {
+							try {
+								voxelizedShape.Add(currVoxelIndex, voxelDrawer.DrawVoxel(currVoxelIndex, voxelizedShapeVoxelsParent));
+							} catch (ArgumentException) {} // Fires when Stoping and initilizing voxelization again, because we try to add voxels at the existing places
+						}
+
+						yield return null;
+					}
 				}
 			}
 		}
-		
 	}
 
 	private bool VoxelInsideShape(Vector3 voxelIndex, float voxelSize) {
