@@ -94,7 +94,7 @@ public class VoxelDrawer : MonoBehaviour {
 	}
 
 	private Transform GetControllerModelTransform() {
-		return transform.GetChild(0);
+		return voxelDrawerController.transform.GetChild(0);
 	}
 
 	/// <summary>Returns true, if a new voxel was added, false if the voxel was already present at the given position.</summary>
