@@ -6,6 +6,6 @@ using UnityEngine;
 public class CheckSphereDebug : MonoBehaviour {
 	public bool CheckSphere() {
 		int layerMask = 1 << 8;
-		return Physics.CheckSphere(transform.position, VoxelDrawer.GetVoxelDrawer().voxelSize, layerMask);
+		return Physics.CheckSphere(transform.position, VoxelDrawing.VoxelDrawer.GetVoxelDrawer().voxelSize, layerMask);
 	}
 }
